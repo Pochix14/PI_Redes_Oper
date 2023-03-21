@@ -231,6 +231,18 @@ int Socket::Bind( int port ) {
    struct sockaddr_in host4;
    struct sockaddr_in6 host6;
 
+   memset(&host4, 0, sizeof(host4));
+   host4.sin_family = AF_INET;
+   host4.sin_port = htons(port);
+   host4.sin_addr.s_addr = INADDR_ANY;
+
+   st = bind(this->idSocket, (sockaddr*) &host4, sizeof(host4));
+   
+   if (st == -1) {
+      perror("Error en bind");
+      exit(2);
+   }
+
    return st;
 
 }
@@ -284,7 +296,13 @@ void Socket::SetIDSocket(int id){
 int Socket::sendTo(const void *buf, size_t len, const void *sockaddrs) {
    int st = -1;
 
-   st = sendto(this->idSocket, buf, len, 0, (sockaddr *) sockaddrs, sizeof(sockaddr_in));
+   st = sendto(this->idSocket, (void *) buf, len, 0, (sockaddr *) sockaddrs, 
+               sizeof(sockaddr_in));
+
+   if (st == -1) {
+      perror("Error al enviar mensaje\n");
+      exit(2);
+   }
 
    return st;
 }
@@ -292,7 +310,13 @@ int Socket::sendTo(const void *buf, size_t len, const void *sockaddrs) {
 int Socket::recvFrom(const void *buf, size_t len, const void *sockaddrs) {
    int st = -1;
 
-   st = recvfrom(this->idSocket, (void *) buf, len, 0, (sockaddr *) sockaddrs, (socklen_t*)sizeof(sockaddr_in));
+   st = recvfrom(this->idSocket, (void *) buf, len, 0, (sockaddr *) sockaddrs, 
+               (socklen_t*)sizeof(sockaddr));   
+
+   if (st == -1) {
+      perror("Error al recibir mensaje\n");
+      exit(2);
+   }
 
    return st;
 

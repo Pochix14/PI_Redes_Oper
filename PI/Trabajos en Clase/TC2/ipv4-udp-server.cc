@@ -13,14 +13,14 @@
 
 #include "Socket.h" 
 
-#define PORT	 9876 
+#define PORT	 6789 
 #define MAXLINE 1024 
 
 int main() { 
    Socket * server;
    int len, n; 
    int sockfd;
-   struct sockaddr_in other;
+   struct sockaddr other;
    char buffer[MAXLINE]; 
    char *hello = (char *) "Hello from CI0123 server"; 
 	

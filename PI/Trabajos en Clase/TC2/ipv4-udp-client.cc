@@ -14,7 +14,7 @@
 
 #include "Socket.h"
 
-#define PORT    9876 
+#define PORT    6789 
 #define MAXLINE 1024 
 
 int main() {
@@ -32,7 +32,6 @@ int main() {
    other.sin_family = AF_INET; 
    other.sin_port = htons(PORT); 
    other.sin_addr.s_addr = INADDR_ANY; 
-   other.sin_addr.s_addr = inet_addr("10.1.35.6");
    
    n = client->sendTo( (void *) hello, strlen( hello ), (void *) & other ); 
    printf("Client: Hello message sent.\n"); 
