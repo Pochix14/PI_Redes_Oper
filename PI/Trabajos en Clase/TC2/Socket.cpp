@@ -29,14 +29,16 @@ Socket::Socket( char type, bool IPv6 ){
     if (type == 's') {
       if (IPv6) {
          idSocket = socket(AF_INET6, SOCK_STREAM, 0);
+         this->ipv6 = true;
       } else {
          idSocket = socket(AF_INET, SOCK_STREAM, 0);
       }
     } else {
         if (IPv6) {
             idSocket = socket(AF_INET6, SOCK_DGRAM, 0);
+            this->ipv6 = true;
         } else {
-            idSocket = socket(AF_INET, SOCK_STREAM, 0);
+            idSocket = socket(AF_INET, SOCK_DGRAM, 0);
         }
     }
 }
@@ -57,7 +59,7 @@ Socket::~Socket(){
   *
  **/
 void Socket::Close(){
-    close(idSocket);
+    close(this->idSocket);
 }
 
 /**
@@ -211,13 +213,6 @@ int Socket::Write( const char *text ) {
 int Socket::Listen( int queue ) {
     int st = -1;
 
-    st = listen(this->idSocket, queue);
-
-    if (st == -1) {
-        perror("Error en listen");
-        exit(2);
-    }
-
     return st;
 
 }
@@ -238,17 +233,24 @@ int Socket::Bind( int port ) {
    struct sockaddr_in host4;
    struct sockaddr_in6 host6;
 
-   //memset(&host4, 0, sizeof(host4));
-   host4.sin_family = AF_INET;
-   host4.sin_port = htons(port);
-   host4.sin_addr.s_addr = INADDR_ANY;
+   if (this->ipv6) {
+      host6.sin6_family = AF_INET6;
+      host6.sin6_port = htons(port);
+      host6.sin6_addr = in6addr_any;
 
-   st = bind(this->idSocket, (struct sockaddr*) &host4, sizeof(struct sockaddr_in));
-      
-   /*if (st == -1) {
-      perror("Error en bind");
-      exit(2);
-   }*/
+      st = bind(this->idSocket, (struct sockaddr*)&host6, sizeof(struct sockaddr_in6));
+   } else {
+      host4.sin_family = AF_INET;
+      host4.sin_port = htons(port);
+      host4.sin_addr.s_addr = INADDR_ANY;
+
+      st = bind(this->idSocket, (struct sockaddr*) &host4, sizeof(struct sockaddr_in));
+   }
+
+   // if (st == -1) {
+   //    perror("Error en bind");
+   //    exit(2);
+   // }
 
    return st;
 
@@ -300,32 +302,61 @@ void Socket::SetIDSocket(int id){
 
 }
 
-int Socket::sendTo(const void *buf, size_t len, const void *sockaddrs) {
-   int st = -1;
+/**
+ *  SendTo method
+ *    use "sendto" Unix System Call (man sendto)
+ * 
+ *  @param void* buf message to be send
+ *  @param size_t len message length
+ *  @param sockaddrs receiving socket address
+ * 
+ *    Send message to another socket
+*/
+ssize_t Socket::sendTo(const void *buf, size_t len, const void *other) {
+   ssize_t st = -1;
 
-   st = sendto(this->idSocket, buf, len, 0, (struct sockaddr *) sockaddrs, 
+   if (this->ipv6) {
+      st = sendto(this->idSocket, buf, len, 0, (struct sockaddr *) other, 
+               sizeof(struct sockaddr_in6));
+   } else {
+      st = sendto(this->idSocket, buf, len, 0, (struct sockaddr *) other, 
                sizeof(struct sockaddr_in));
-
-   /*if (st == -1) {
-      perror("Error al enviar mensaje\n");
-      exit(2);
-   }*/
+   }
+   // if (st == -1) {
+   //    perror("Error al enviar mensaje\n");
+   //    exit(2);
+   // }
 
    return st;
 }
 
-int Socket::recvFrom( void *buf, size_t len, const void *sockaddrs) {
-   int st = -1;
+/**
+ *  RecvFrom method
+ *    use "recvfrom" Unix System Call (man recvfrom)
+ * 
+ *  @param void* buf buffer for message to be read
+ *  @param size_t len message length
+ *  @param sockaddrs sending socket type
+ * 
+ *    Receives message from another socket
+*/
+ssize_t Socket::recvFrom(void *buf, size_t len, void *other) {
+   ssize_t st = -1;
 
-   int size = sizeof(struct sockaddr_in);
+   if (this->ipv6) {
+      int size = sizeof(struct sockaddr_in6);
+      st = recvfrom(this->idSocket, buf, len, 0, (struct sockaddr *) other, 
+               (socklen_t*)&size);  
+   } else {
+      int size = sizeof(struct sockaddr_in);
 
-   st = recvfrom(this->idSocket, buf, len, 0, (struct sockaddr *) sockaddrs, 
-               (socklen_t*)&size);
-
-   /*if (st == -1) {
-      perror("Error al recibir mensaje\n");
-      exit(2);
-   }*/
+      st = recvfrom(this->idSocket, buf, len, 0, (struct sockaddr *) other, 
+               (socklen_t*)&size);  
+   }
+   // if (st == -1) {
+   //    perror("Error al recibir mensaje\n");
+   //    exit(2);
+   // }
 
    return st;
 

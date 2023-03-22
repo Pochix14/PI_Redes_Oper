@@ -1,3 +1,5 @@
+
+
 /**
  *  Establece la definición de la clase Socket para efectuar la comunicación
  *  de procesos que no comparten memoria, utilizando un esquema de memoria
@@ -35,8 +37,8 @@ class Socket {
         Socket * Accept();
         int Shutdown( int mode );		// mode = { SHUT_RD, SHUT_WR, SHUT_RDWR }
         void SetIDSocket( int newId );
-        int sendTo(const void *buf, size_t len, const void *sockaddr);
-        int recvFrom( void *buf, size_t len, const void *sockaddr);
+        ssize_t sendTo(const void *buf, size_t len, const void *sockaddr);
+        ssize_t recvFrom(void *buf, size_t len, void *sockaddr);
         
     private:
         int idSocket;
@@ -45,3 +47,5 @@ class Socket {
 };
 
 #endif
+
+

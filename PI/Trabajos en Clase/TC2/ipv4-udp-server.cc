@@ -30,7 +30,7 @@ int main() {
    memset( &other, 0, sizeof( other ) );
 
    n = server->recvFrom( (void *) buffer, MAXLINE, (void *) &other );	// Mensaje de los www servers
-   buffer[n] = '\0'; 
+   buffer[n] = '\0';  
    printf("Server: message received: %s\n", buffer);
 
    server->sendTo( (const void *) hello, strlen( hello ), (void *) &other );

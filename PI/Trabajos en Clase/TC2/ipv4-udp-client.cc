@@ -32,6 +32,8 @@ int main() {
    other.sin_family = AF_INET; 
    other.sin_port = htons(PORT); 
    other.sin_addr.s_addr = INADDR_ANY; 
+
+   inet_pton(AF_INET, "127.0.0.1", &other.sin_addr);
    
    n = client->sendTo( (void *) hello, strlen( hello ), (void *) & other ); 
    printf("Client: Hello message sent.\n"); 
